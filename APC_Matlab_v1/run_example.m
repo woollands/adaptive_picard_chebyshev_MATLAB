@@ -20,9 +20,9 @@ const;
 
 %%% Specify Orbit Elements OR Cartesian State %%%
 % Orbit Elements
-a           = Re+26600;             % Semimajor Axis (km)
-e           = 0.72;                 % Eccentricity
-inc         = 0*pi/180;             % Inclination (radians)
+a           = 6878+550;             % Semimajor Axis (km)
+e           = 0.0;                 % Eccentricity
+inc         = 7*pi/180;             % Inclination (radians)
 w           = 0*pi/180;             % Argument of Perigee (radians)
 Om          = 0*pi/180;             % Right Ascension of Ascending Node (radians)
 p           = a*(1 - e^2);          % Semilatus Rectum (km)
@@ -36,7 +36,7 @@ v0          = [];                   % Initial Velocity Vector (km/s)
 
 % Specify Time Interval
 t0          = 0;                    % Initial Time (s)
-tf          = 2*Period;             % Final Time (s)
+tf          = 10*Period;             % Final Time (s)
 dt          = 60;                   % Output Time Interval (s)
 
 % Specify Solution Accuracy
@@ -44,20 +44,20 @@ Deg         = 70;                   % Degree of Gravity Model (max = 100)
 tol         = 1e-15;                % Tolerance (max = 1e-15)
 
 % Drag Parameters
-m           = 1000;                 % Mass (kg)
+m           = 295;                 % Mass (kg)
 Cd          = 2;                    % Drag Coefficient
-A           = 10;                   % Area (m)
+A           = 2;                   % Area (m^2)
 
 % Specify Algorithm Specifications
 var_fid     = 1;                    % Variable Fidelity Gravity Model (YES = 1, NO = 0)
 rad_grav    = 1;                    % Radially Adaptive Gravity (YES = 1, NO = 0)
-quasi_lin   = 1;                    % Acceleration via Quasilinearization (YES = 1, NO = 0)
-hot_start   = 1;                    % Hot Start for subsequent orbits (YES = 1, NO = 0)
+quasi_lin   = 0;                    % Acceleration via Quasilinearization (YES = 1, NO = 0)
+hot_start   = 0;                    % Hot Start for subsequent orbits (YES = 1, NO = 0)
 atm_drag    = 0;                    % Exponential Drag (see Vallado) (YES = 1, NO = 0)
 
 % Specify Output
-inform      = 1;                    % Print the output information to screen (YES = 1, NO = 0)
-show_figs   = 1;                    % Plot trajectory and Hamiltonian (YES = 1, NO = 0)
+inform      = 0;                    % Print the output information to screen (YES = 1, NO = 0)
+show_figs   = 0;                    % Plot trajectory and Hamiltonian (YES = 1, NO = 0)
 
 %%% END USER INPUT
 
@@ -94,7 +94,9 @@ specs = struct('var_fid',var_fid,...
     'show_figs',show_figs);
 
 % Call adaptive algorithm (Junkins & Woollands, JGCD, Jan 2019: https://arc.aiaa.org/doi/10.2514/1.G003318)
+tic
 [time,X,V,seg,N,Teval] = adaptive_picard_chebyshev(input,params,specs);
+toc
 
 %% Output
 
@@ -111,5 +113,3 @@ H = jacobi_integral(time,X,V,Period,1);
 if inform == 1
     inform_user
 end
-
-

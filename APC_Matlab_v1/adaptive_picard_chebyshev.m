@@ -56,8 +56,10 @@ if atm_drag == 1
 end
 
 % Tolerance Computation
-coeff_tol   = tol/100;
-fit_tol     = tol/10;
+% coeff_tol   = tol/100;
+% fit_tol     = tol/10;
+coeff_tol   = tol/5;
+fit_tol     = tol;
 
 % Function Evaluation Counters
 Jeval       = 0;  % Approximate Gravity Model
@@ -174,6 +176,7 @@ while fit_check <= coeff
     Nint   = 10;
     jmax   = 3;
     Nvec   = [Nint 2*Nint 4*Nint 8*Nint];   % Node doubling (see paper)
+    
     % Loop through different values for N
     for j  = 1:jmax
         % Initialize indices
@@ -241,39 +244,14 @@ while fit_check <= coeff
                 end
             end
         end
-        %         disp(['seg = ',num2str(seg),', N = ',num2str(N),', Coefficient Magnitude (4th last) = ',...
-        %             num2str(max_gamma(i)),', Acceleration Fit = ',num2str(Err)])
+%                 disp(['seg = ',num2str(seg),', N = ',num2str(N),', Coefficient Magnitude (4th last) = ',...
+%                     num2str(max_gamma(i)),', Acceleration Fit = ',num2str(Err)])
         if fit_check == coeff
             break
         end
         fit_check = 0;
     end
     
-% figure;
-% subplot 311
-% semilogy(abs(gamma(1:N,1)),'k-o','Linewidth',2)
-% hold on
-% grid on
-% plot(tol.*ones(length(gamma(1:N,1)),1),'k--','Linewidth',2)
-% plot(coeff_tol.*ones(length(gamma(1:N,1)),1),'k-.','Linewidth',2)
-% ylabel('x Coefficient')
-% subplot 312
-% semilogy(abs(gamma(1:N,2)),'k-o','Linewidth',2)
-% hold on
-% grid on
-% plot(tol.*ones(length(gamma(1:N,1)),1),'k--','Linewidth',2)
-% plot(coeff_tol.*ones(length(gamma(1:N,1)),1),'k-.','Linewidth',2)
-% ylabel('y Coefficient')
-% legend('Magnitude','Specified Tolerance','Fit Tolerance')
-% subplot 313
-% semilogy(abs(gamma(1:N,3)),'k-o','Linewidth',2)
-% hold on
-% grid on
-% plot(tol.*ones(length(gamma(1:N,1)),1),'k--','Linewidth',2)
-% plot(coeff_tol.*ones(length(gamma(1:N,1)),1),'k-.','Linewidth',2)
-% xlabel('Number of Coefficients')
-% ylabel('z Coefficient')
-
     clear gamma
     seg = seg + 2;
     
@@ -455,7 +433,7 @@ while bloop == 0
         if hot == 1
             X    = X + HotX((k-1)*(length(X))+1:k*(length(X)),:);
             V    = V + HotV((k-1)*(length(X))+1:k*(length(X)),:);
-            errX = 1e-2;
+            errX = 1e-3;
         end
     end
     
@@ -465,7 +443,7 @@ while bloop == 0
     %% PART 4A: Picard Iteration
     while(errX > tol)
         
-        R3 = sqrt(X(:,1).^2 + X(:,2).^2 + X(:,3).^2).^3;
+%         R3 = sqrt(X(:,1).^2 + X(:,2).^2 + X(:,3).^2).^3;
         
         % ECI to ECEF
         [xB,vB] = eci2ecef(time,X,V,omega);
@@ -539,10 +517,19 @@ while bloop == 0
         
         % Nondimensional Error
         errX   = max(max(abs([X(:,1:3)./DU V(:,1:3)./VU] - [Xnew(:,1:3)./DU Vnew(:,1:3)./VU])));
+%         if itr > 1
+% %             err1 = max([max(max(abs(Alpha-Alpha_old)))./max(max(abs(Xnew))) max(max(abs(Beta-Beta_old)))./max(max(abs(Vnew)))]);
+%             err1 = max(max(abs(A*G-A*G_old)))./max(max(abs(G)));
+%             [errX err1]
+% %             errX = err1;
+%         end
         
         % Update
         X      = Xnew;
         V      = Vnew;
+        Alpha_old = Alpha;
+        Beta_old = Beta;
+        G_old = G;
         
         % Iteration Counter
         if (itr < MaxIt)
@@ -558,6 +545,7 @@ while bloop == 0
         errVec = [errVec; errX];
         MODEL  = [MODEL; model];
     end
+    
     % Convergence Figure
 %     figure(800)
 %     semilogy([1:length(errVec)],errVec,'k-','Linewidth',2)
